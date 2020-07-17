@@ -11,8 +11,6 @@ public class Paddle : MonoBehaviour
     float   minX = paddleWidthInUnits / 2;       // Paddle is 2 units wide, so width / 2
     [SerializeField]
     float   maxX = screenWidthInUnits - (paddleWidthInUnits / 2);   // subtract that from screenWidthInUnits
-    [SerializeField]
-    float   test = 1f;
 
     // Start is called before the first frame update
     void Start()
