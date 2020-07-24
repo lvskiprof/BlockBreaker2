@@ -33,7 +33,7 @@ public class GameStatus : MonoBehaviour
 	void Start()
 	{
 		currentLevel = FindObjectOfType<Level>();
-		score.text = "Score: " + score.ToString();
+		score.text = "Score: " + currentScore.ToString();
 	}   // Start()
 
 	/***
@@ -51,5 +51,6 @@ public class GameStatus : MonoBehaviour
 	public void AddToScore()
 	{
 		currentScore += pointsPerBlockDestroyed;
+		score.text = "Score: " + currentScore.ToString();
 	}   // AddToScore()
 }   // class GameStatus

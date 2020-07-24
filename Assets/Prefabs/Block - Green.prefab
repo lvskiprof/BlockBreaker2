@@ -121,7 +121,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecab484a0f39c0c438aa317a6c26a80d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockDestoryedSounds:
+  blockDestroyedSounds:
   - {fileID: 8300000, guid: d0228de80740e7e4f83c811ca8454b0d, type: 3}
-  currentLevel: {fileID: 5080253101646508531, guid: 8e4baba2f727c4f49afa853cd948bb5b,
-    type: 3}
