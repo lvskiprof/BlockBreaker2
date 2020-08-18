@@ -31,7 +31,7 @@ public class Level : MonoBehaviour
     /***
     *       CountBreakableBlocks() will count up how many blocks are on this level.
     ***/
-    public void CountBreakableBlocks()
+    public void CountBlocks()
     {
         blocks++;
     }   // CountBreakableBlocks()
@@ -44,6 +44,8 @@ public class Level : MonoBehaviour
     {
         blocks--;
         if (blocks <= 0)
+        {
             sceneLoader.LoadNextScene();
+        }   // if
     }   // BlockDestroyed()
 }   // class Level
