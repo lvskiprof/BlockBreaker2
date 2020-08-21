@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using UnityEditor;
 using UnityEngine;
 
 public class Block : MonoBehaviour
@@ -21,12 +23,22 @@ public class Block : MonoBehaviour
     const string breakable = "Breakable";       // Tag value for a breakable block
     const string unbreakable = "Unbreakable";   // Tag value for an unbreakable block
 
+    /***
+	*		Configurable parameters set in Unity Editor.
+	***/
+
     [SerializeField]
-    public BlockColor  blockColor;
+    public BlockColor   blockColor;             // Set in the prefab for each color of block
     [SerializeField]
-    GameObject  blockSparklesVFX;
+    GameObject          blockSparklesVFX;       // Prefab that provides a cute visual effect when a block is destroyed
     [SerializeField]
-    AudioClip[] blockDestroyedSounds;   // Assigned in Unity Editor
+    AudioClip[]         blockDestroyedSounds;   // Assigned in Unity Editor
+    [SerializeField]
+    Sprite[]            hitSprites;             // List of sprites to use to show the damage level of a block (may be empty)
+    [SerializeField]
+    int                 maxHits;                // The maximum number of times a block must be hit to be destroyed
+    [SerializeField]
+    int                 timesHit;               // Only serialized for debugging
 
     /***
 	*		Cached componenet references.
@@ -40,6 +52,7 @@ public class Block : MonoBehaviour
     ***/
     void Start()
 	{
+        maxHits = hitSprites.Length + 1;    // The number of Sprites will cause this to be set
 		gameStatus = FindObjectOfType<GameStatus>();
 		blockDestroyedSounds[0] = blockDestroyedSounds[0];
         currentLevel = FindObjectOfType<Level>();
@@ -95,14 +108,34 @@ public class Block : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (CompareTag(breakable))
-        {
-            DestroyBlock();
-        }   // if
-        else if (CompareTag(unbreakable))
+		{
+			HandleHit();
+		}   // if
+		else if (CompareTag(unbreakable))
 		{
 
 		}   // else
 
         //Debug.Log(collision.gameObject.name);   // Log what collided with the block
     }   // OnCollisionEnter2D()
+
+	private void HandleHit()
+	{
+		timesHit++;
+		if (timesHit >= maxHits)
+		{
+			DestroyBlock();
+		}   // if
+        else
+		{   // Show next hit sprite
+            ShowNextHitSprite();
+		}   // else
+    }   // HandleHit()
+
+	private void ShowNextHitSprite()
+	{
+        int     spriteIndex = timesHit - 1;
+
+        GetComponent<SpriteRenderer>().sprite = hitSprites[spriteIndex];
+    }   // ShowNextHitSprite()
 }   // class Block
