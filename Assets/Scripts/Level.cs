@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Level : MonoBehaviour
 {
@@ -15,17 +15,14 @@ public class Level : MonoBehaviour
 	*		Cached componenet references.
 	***/
 
-    SceneLoader sceneLoader;
+    GameStatus  gameStatus;             // GameStatus object for this level the block is on
 
     /***
     *       Start is used to cache the Level object.
     ***/
     void Start()
     {
-        if (sceneLoader == null)
-        {
-            sceneLoader = FindObjectOfType<SceneLoader>();
-        }   // if
+        gameStatus = FindObjectOfType<GameStatus>();
     }   // Start()
 
     /***
@@ -34,6 +31,8 @@ public class Level : MonoBehaviour
     public void CountBlocks()
     {
         blocks++;
+        if (blocks == 1)
+            gameStatus.SetAllBlocksDestroyed(false);   // Only need to reset this if there are breakable blocks
     }   // CountBreakableBlocks()
 
     /***
@@ -44,8 +43,6 @@ public class Level : MonoBehaviour
     {
         blocks--;
         if (blocks <= 0)
-        {
-            sceneLoader.LoadNextScene();
-        }   // if
+            FindObjectOfType<SceneLoader>().LoadNextScene();
     }   // BlockDestroyed()
 }   // class Level

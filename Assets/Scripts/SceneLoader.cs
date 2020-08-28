@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 public class SceneLoader : MonoBehaviour
 {
 /***
-*		LoadNextScene(0 will load whatever the next numbered scene in Build Settings.
+*		LoadNextScene() will load whatever the next numbered scene in Build Settings.
 ***/
 	public void LoadNextScene()
 	{
@@ -16,7 +17,7 @@ public class SceneLoader : MonoBehaviour
 	}   // LoadNextScene()
 
 	/***
-	*		LoadStartScene will load the first scene in the Build Settings.
+	*		LoadStartScene() will load the first scene in the Build Settings.
 	***/
 	public void LoadStartScene()
 	{

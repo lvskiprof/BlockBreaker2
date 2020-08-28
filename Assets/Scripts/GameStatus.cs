@@ -4,15 +4,19 @@ using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameStatus : MonoBehaviour
 {
-	[Range(0.1f, 3.0f)] [SerializeField]
+	[Range(0.1f, 3.0f)]
+	[SerializeField]
 	float   gameSpeed = 1f;
 	[SerializeField]
-	int     pointsPerBlockDestroyed = 10;	// This is set in the Unity Editor, so this value is overridden
+	int     pointsPerBlockDestroyed = 10;   // This is set in the Unity Editor, so this value is overridden
 	[SerializeField]
 	TextMeshProUGUI score;
+	[SerializeField]
+	bool    isAutoPlayEnabled = false;
 
 	/***
 	*		Current state values.
@@ -20,12 +24,15 @@ public class GameStatus : MonoBehaviour
 
 	[SerializeField]
 	int     currentScore = 0;
+	bool    allBlockssDestroyed = false;    // This can be used to tell if all the blocks on the last level have been destroyed
+	bool    foundText = false;				// We won't do this search again once we are on the Game Over scene
 
 	/***
 	*		Cached componenet references.
 	***/
 
 	Level   currentLevel;   // Level object for this level the game status will work on.
+	Scene   currentScene;	// When this doesn't match the current scene, save it and check if we are in Game Over scene
 
 	/***
 	*		Awake() runs before anything else, including Start().
@@ -44,14 +51,14 @@ public class GameStatus : MonoBehaviour
 		int gameStatusCount = FindObjectsOfType<GameStatus>().Length;
 		if (gameStatusCount > 1)
 		{   // We only want to keep the first one to preserve game status between scenes
-			gameObject.SetActive(false);	// Prevent anything from being able to find or interact with this instance of GameStatus
+			gameObject.SetActive(false);    // Prevent anything from being able to find or interact with this instance of GameStatus
 			Destroy(gameObject);    // Destroy this secondary version of GameStatus
 			score.text = "Score:\n" + currentScore.ToString();
 		}   // if
 		else
-		{	// Tell Unity not to destroy this gameObject when another scene loads in the future
+		{   // Tell Unity not to destroy this gameObject when another scene loads in the future
 			DontDestroyOnLoad(gameObject);
-		}	// else
+		}   // else
 	}   // Awake()
 
 	/***
@@ -76,7 +83,26 @@ public class GameStatus : MonoBehaviour
     ***/
 	void Update()
 	{
+		Scene thisScene = SceneManager.GetActiveScene();
+
 		Time.timeScale = gameSpeed;
+		if (thisScene != currentScene)
+		{   // This is the first time in this scene
+			currentScene = thisScene;	// Save it so we don't do this again for this scene
+			if (currentScene.name == "Game Over")
+			{	// If this is the Game Over scene, see if they won and change the text to say that if they did
+				Text[] resultText = FindObjectsOfType<Text>();
+				for (int i = 0; i < resultText.Length; i++)
+				{   // Find the text that defaults to "You Lost!" message
+					Debug.Log("resultText[" + i + "].name = " + resultText[i].name);
+					if (resultText[i].tag == "Finish")
+					{   // Change the text to show that you won
+						resultText[i].text = "You Won!!!!";
+						Debug.Log("You Won!!!");
+					}   // if
+				}   // for
+			}   // if
+		}	// if
 	}   // Update()
 
 	/***
@@ -88,7 +114,6 @@ public class GameStatus : MonoBehaviour
 	***/
 	public void AddToScore(Block block)
 	{
-		//currentScore += pointsPerBlockDestroyed;
 		currentScore += pointsPerBlockDestroyed * ((int)block.blockColor + 1);
 		DisplayScore();
 	}   // AddToScore()
@@ -100,5 +125,30 @@ public class GameStatus : MonoBehaviour
 	{
 		currentScore = 0;
 		DisplayScore();
-	}	// ResetScore()
+	}   // ResetScore()
+
+	/***
+	*       IsAutoPlayEnabled() returns the state of isAutoPlayEnabled, so we don't have
+	*   to make it public.
+	***/
+	public bool IsAutoPlayEnabled()
+	{
+		return isAutoPlayEnabled;
+	}   // bool IsAutoPlayEnabled()
+
+	/***
+	*       SetAllBlocksDestroyed() sets  allBlockssDestroyed to the passed state.
+	***/
+	public void SetAllBlocksDestroyed(bool state)
+	{
+		allBlockssDestroyed = state;
+	}   // ResetAllBlocksDestroyed()
+
+	/***
+	*       AllBlocksDestroyed() returns the currentScore to 0 for the start of the game.
+	***/
+	public bool AllBlocksDestroyed()
+	{
+		return allBlockssDestroyed;
+	}   // AllBlocksDestroyed()
 }   // class GameStatus

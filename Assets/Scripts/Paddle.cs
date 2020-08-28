@@ -12,18 +12,38 @@ public class Paddle : MonoBehaviour
     [SerializeField]
     float   maxX = screenWidthInUnits - (paddleWidthInUnits / 2);   // subtract that from screenWidthInUnits
 
+    /***
+	*		Cached componenet references.
+	***/
+    GameStatus  gameStatus;
+    Ball        ball;
+
     // Start is called before the first frame update
     void Start()
     {
-
+        gameStatus = FindObjectOfType<GameStatus>();
+        ball = FindObjectOfType<Ball>();
     }   // Start()
 
     // Update is called once per frame
     void Update()
     {
-        float   mousePosInUnits = Camera.main.ScreenToWorldPoint(Input.mousePosition).x;    // Using Input.mousePosition.x / Screen.width * screenWidthInUnits, cased the paddle to move slower than the mouse (only was correct in the middle)
-        Vector2 paddlePos = new Vector2(mousePosInUnits, transform.position.y);
-        paddlePos.x = Mathf.Clamp(mousePosInUnits, minX, maxX);
+        Vector2 paddlePos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x,
+            transform.position.y);
+
+        paddlePos.x = Mathf.Clamp(GetXPos(), minX, maxX);
         transform.position = paddlePos;
     }   // Update()
+
+    private float GetXPos()
+	{
+        if (gameStatus.IsAutoPlayEnabled())
+        {   // Make sure the paddle is always where the ball is in auto play mode
+            return ball.transform.position.x;
+        }   // if
+        else
+        {   // Default to following the cursor if not in Automatic mode
+            return Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
+        }   // else
+    }   // GetXPos()
 }   // class Paddle
