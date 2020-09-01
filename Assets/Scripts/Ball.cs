@@ -3,17 +3,19 @@
 public class Ball : MonoBehaviour
 {
 	[SerializeField]
-	Paddle  paddle1;					// Linked to Paddle in Unity Editor
+	Paddle  paddle1;				// Linked to Paddle in Unity Editor
 	[SerializeField]
 	float   xPush = 2f;
 	[SerializeField]
 	float   yPush = 15f;
 	[SerializeField]
-	AudioClip[] ballSounds;				// Assigned in Unity Editor
+	AudioClip[] ballSounds;			// Assigned in Unity Editor
 	[SerializeField]
-	float   randomFactor = 0.5f;        // Factor to prevent boring ball loops default value from example video
+	float   randomFactor = 0.5f;    // Factor to prevent boring ball loops default value from example video
 	[SerializeField]
-	float maxVelocity = 50f;			// Tunable max velocity limit
+	float minVelocity = 15f;		// Tunable min velocity limit (15 seems to be the lowest the works)
+	[SerializeField]
+	float maxVelocity = 25f;		// Tunable max velocity limit
 
 	/***
 	*		Current state values.
@@ -28,6 +30,7 @@ public class Ball : MonoBehaviour
 
 	AudioSource myAudioSource;
 	Rigidbody2D myRigidBody2D;
+	GameStatus  gameStatus;
 
 	/***
 	*       Start() is only used to set the distance vector between the ball and the paddle.
@@ -37,6 +40,7 @@ public class Ball : MonoBehaviour
 		paddleToBallVector = transform.position - paddle1.transform.position;
 		myAudioSource = GetComponent<AudioSource>();
 		myRigidBody2D = GetComponent<Rigidbody2D>();
+		gameStatus = FindObjectOfType<GameStatus>();
 	}   // Start()
 
 	/***
@@ -67,6 +71,8 @@ public class Ball : MonoBehaviour
 	{
 		Vector2 paddlePos = new Vector2(paddle1.transform.position.x, paddle1.transform.position.y);
 		transform.position = paddlePos + paddleToBallVector;
+		if (gameStatus.IsAutoPlayEnabled())
+			LaunchBall();	// Launch ball automatically on a level where this flag is set
 	}   // LockBallToPaddle()
 
 	/***
@@ -77,33 +83,44 @@ public class Ball : MonoBehaviour
 	{
 		if (Input.GetMouseButtonDown(0))
 		{   // Left mouse button was pressed
-			ballLaunched = true;
-			myRigidBody2D.velocity = new Vector2(xPush, yPush);
+			LaunchBall();
 		}   // if
 	}   // LaunchBallOnMouseClick()
 
 	/***
+	*       LaunchBall() will make the ball launch off the paddle and disable it sticking to
+	*   the paddle after that.  It is called in multiple places, so it was broken out from
+	*   LaunchBallOnMouseClick() and made a method.
+	***/
+	public void LaunchBall()
+	{
+		ballLaunched = true;
+		myRigidBody2D.velocity = new Vector2(xPush, yPush);
+		if (myRigidBody2D.velocity.magnitude < minVelocity)
+			ClampVelocity(minVelocity); // Make sure it is going at the minimum velocity to start
+	}   // LaunchBall()
+
+	/***
     *       OnCollisionEnter2D() will make the sound we program it for in the Editor when the
     *   ball collides with something.
+    *		Note:  Uses veloctity tweaks from Udemy community posts:
+    *		https://community.gamedev.tv/t/question-about-the-velocity-tweak-in-this-lecture/117674
+    *		https://community.gamedev.tv/t/velocitytweak-fixed/125114
+    *		https://community.gamedev.tv/t/autoplay-loses-the-game-and-ball-smashing-through-the-walls/83251
     ***/
 	private void OnCollisionEnter2D()
 	{
 		if (ballLaunched)
 		{
-			//Vector2 velocityTweak = new Vector2(Random.Range(0f, randomFactor), Random.Range(0f, randomFactor));
-			Vector2 tweakVelocityOfBoth = new Vector2(Random.Range(0.1f, randomFactor), Random.Range(0.1f, randomFactor));
-			Vector2 tweakVelocityOfX = new Vector2(Random.Range(0.1f, randomFactor), 0);
-			Vector2 tweakVelocityOfY= new Vector2(0, Random.Range(0.1f, randomFactor));
+			Vector2 tweakVelocityOfBoth = new Vector2(Random.Range(-randomFactor, randomFactor),
+				Random.Range(-randomFactor, randomFactor)); // Replaced 0.1f with -randomFactor here
+			Vector2 tweakVelocityOfX = new Vector2(Random.Range(-randomFactor, randomFactor), 0);
+			Vector2 tweakVelocityOfY= new Vector2(0, Random.Range(-randomFactor, randomFactor));
 
 			myAudioSource.PlayOneShot(ballSounds[Random.Range(0, ballSounds.Length)]);
-			//myRigidBody2D.velocity += velocityTweak;
-			//myRigidBody2D.velocity = myRigidBody2D.velocity.normalized * ballSpeed;
 			if (myRigidBody2D.velocity.x >= 0 && myRigidBody2D.velocity.y >= 0)
 			{
-
 				myRigidBody2D.velocity += tweakVelocityOfBoth;
-
-				//Debug.Log(myRigidBody2d.velocity);
 			}
 			else if (myRigidBody2D.velocity.x <= 0 && myRigidBody2D.velocity.y <= 0)
 			{
@@ -120,7 +137,41 @@ public class Ball : MonoBehaviour
 				myRigidBody2D.velocity -= tweakVelocityOfX;
 			}
 
-			myRigidBody2D.velocity = Vector2.ClampMagnitude(myRigidBody2D.velocity, maxVelocity);	// Don't exceed the max valocity setting
-		}	// if
+			if (myRigidBody2D.velocity.magnitude < minVelocity)
+			{
+				//Debug.Log("Raising Magnitude above minimum");
+				ClampVelocity(minVelocity);
+			}	// if
+			else if (myRigidBody2D.velocity.magnitude > maxVelocity)
+			{
+				//Debug.Log("Clamping Magnitude to maximum");
+				ClampVelocity(maxVelocity);
+			}	// else
+		}   // if
 	}   // OnCollisionEnter2D()
+
+	/***
+	*       ClampVelocity() will set the velocity to the passed value.
+	***/
+	private void ClampVelocity(float velocityLimit)
+	{
+		Debug.Log("Before magnitude = " + myRigidBody2D.velocity.magnitude +
+			", x = " + myRigidBody2D.velocity.x + ", y = " + myRigidBody2D.velocity.y);
+		ChangeVelocity(velocityLimit / myRigidBody2D.velocity.magnitude);
+		Debug.Log("After magnitude = " + myRigidBody2D.velocity.magnitude +
+			", x = " + myRigidBody2D.velocity.x + ", y = " + myRigidBody2D.velocity.y);
+	}   // ClampVelocity()
+
+	/***
+	*       ChangeVelocity() will make the ball velocity change by the multiple of the
+	*   new value given.  The change is not exact and will tend to be a bit over or under
+	*   the amount asked for, due to rounding, but it will be fairly close.
+	*		Examples:
+	*		ChangeVelocity(0.9f) will slow the ball down by about 1/10th
+	*		ChangeVelocity(1.1f) will speed the ball up by about 1/10th
+	***/
+	public void ChangeVelocity(float magnitudeChange)
+	{
+		myRigidBody2D.velocity *= magnitudeChange;
+	}   // ChangeVelocity()
 }   // class Ball

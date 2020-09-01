@@ -43,6 +43,9 @@ public class Level : MonoBehaviour
     {
         blocks--;
         if (blocks <= 0)
+        {   // Set the flag to show all blocks for this level have been destroyed and load the next level
+            gameStatus.SetAllBlocksDestroyed(true);
             FindObjectOfType<SceneLoader>().LoadNextScene();
+        }   // if
     }   // BlockDestroyed()
 }   // class Level

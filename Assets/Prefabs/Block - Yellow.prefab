@@ -128,5 +128,5 @@ MonoBehaviour:
   hitSprites:
   - {fileID: 21300000, guid: f5c499b3e08bd924587f389541deec7c, type: 3}
   - {fileID: 21300000, guid: 0460435368a6abb42a6ebfadf1ed0e22, type: 3}
-  maxHits: 3
+  stickiness: 1.2
   timesHit: 0

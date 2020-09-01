@@ -24,14 +24,12 @@ public class GameStatus : MonoBehaviour
 
 	[SerializeField]
 	int     currentScore = 0;
-	bool    allBlockssDestroyed = false;    // This can be used to tell if all the blocks on the last level have been destroyed
-	bool    foundText = false;				// We won't do this search again once we are on the Game Over scene
+	bool    allBlocksDestroyed = false;    // This can be used to tell if all the blocks on the last level have been destroyed
 
 	/***
-	*		Cached componenet references.
+	*		Cached component references.
 	***/
 
-	Level   currentLevel;   // Level object for this level the game status will work on.
 	Scene   currentScene;	// When this doesn't match the current scene, save it and check if we are in Game Over scene
 
 	/***
@@ -74,12 +72,14 @@ public class GameStatus : MonoBehaviour
     ***/
 	void Start()
 	{
-		currentLevel = FindObjectOfType<Level>();
 		DisplayScore();
 	}   // Start()
 
 	/***
     *       Update sets our time scale for this level.
+    *       It also detects if we are on the last scene by checking for a Text object with a tag of
+    *    "Finish".    This is the text that defaults to "You Lost!!!".  If the flag is set that you
+    *    destroiyed all the balls on the last level it will change the text to "You Won!!!".
     ***/
 	void Update()
 	{
@@ -88,21 +88,16 @@ public class GameStatus : MonoBehaviour
 		Time.timeScale = gameSpeed;
 		if (thisScene != currentScene)
 		{   // This is the first time in this scene
-			currentScene = thisScene;	// Save it so we don't do this again for this scene
-			if (currentScene.name == "Game Over")
-			{	// If this is the Game Over scene, see if they won and change the text to say that if they did
-				Text[] resultText = FindObjectsOfType<Text>();
-				for (int i = 0; i < resultText.Length; i++)
-				{   // Find the text that defaults to "You Lost!" message
-					Debug.Log("resultText[" + i + "].name = " + resultText[i].name);
-					if (resultText[i].tag == "Finish")
-					{   // Change the text to show that you won
-						resultText[i].text = "You Won!!!!";
-						Debug.Log("You Won!!!");
-					}   // if
-				}   // for
-			}   // if
-		}	// if
+			currentScene = thisScene;   // Save it so we don't do this again for this scene
+			Text[] resultText = FindObjectsOfType<Text>();
+			for (int i = 0; i < resultText.Length; i++)
+			{   // See if the text that defaults to "You Lost!" message is present
+				if (resultText[i].tag == "Finish" && allBlocksDestroyed)
+				{   // Change the text to show that you won
+					resultText[i].text = "You Won!!!!";
+				}   // if
+			}   // for
+		}   // if
 	}   // Update()
 
 	/***
@@ -129,7 +124,7 @@ public class GameStatus : MonoBehaviour
 
 	/***
 	*       IsAutoPlayEnabled() returns the state of isAutoPlayEnabled, so we don't have
-	*   to make it public.
+	*   to make the flag public.
 	***/
 	public bool IsAutoPlayEnabled()
 	{
@@ -141,7 +136,7 @@ public class GameStatus : MonoBehaviour
 	***/
 	public void SetAllBlocksDestroyed(bool state)
 	{
-		allBlockssDestroyed = state;
+		allBlocksDestroyed = state;
 	}   // ResetAllBlocksDestroyed()
 
 	/***
@@ -149,6 +144,6 @@ public class GameStatus : MonoBehaviour
 	***/
 	public bool AllBlocksDestroyed()
 	{
-		return allBlockssDestroyed;
+		return allBlocksDestroyed;
 	}   // AllBlocksDestroyed()
 }   // class GameStatus

@@ -13,7 +13,7 @@ public class Paddle : MonoBehaviour
     float   maxX = screenWidthInUnits - (paddleWidthInUnits / 2);   // subtract that from screenWidthInUnits
 
     /***
-	*		Cached componenet references.
+	*		Cached component references.
 	***/
     GameStatus  gameStatus;
     Ball        ball;
