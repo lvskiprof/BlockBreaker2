@@ -151,12 +151,25 @@ public class Ball : MonoBehaviour
 	}   // OnCollisionEnter2D()
 
 	/***
-	*       ClampVelocity() will set the velocity to the passed value.
+	*       ClampVelocity() will set the velocity to the passed value.  If requested
+	*   velocity change would be more than a value of 1 difference it is limited to
+	*   only adding one to the current velocity.  That way the change is gradual and
+	*   it will get ramped up further next time if it is still outside the desired
+	*   range.  Without such a limit the ball can accelerate much too quickly
+	*   sometimes and the player won't be able to react to it easily.
 	***/
 	private void ClampVelocity(float velocityLimit)
 	{
 		Debug.Log("Before magnitude = " + myRigidBody2D.velocity.magnitude +
 			", x = " + myRigidBody2D.velocity.x + ", y = " + myRigidBody2D.velocity.y);
+		if (Mathf.Abs(velocityLimit - myRigidBody2D.velocity.magnitude) > 1.0f)
+		{   // Don't change it too much at one time
+			if (velocityLimit > myRigidBody2D.velocity.magnitude)
+				velocityLimit = myRigidBody2D.velocity.magnitude + 1.0f;    // Increase by 1.0f
+			else
+				velocityLimit = myRigidBody2D.velocity.magnitude - 1.0f;	// Decrease by 1.0f
+		}   // if
+
 		ChangeVelocity(velocityLimit / myRigidBody2D.velocity.magnitude);
 		Debug.Log("After magnitude = " + myRigidBody2D.velocity.magnitude +
 			", x = " + myRigidBody2D.velocity.x + ", y = " + myRigidBody2D.velocity.y);
@@ -164,8 +177,10 @@ public class Ball : MonoBehaviour
 
 	/***
 	*       ChangeVelocity() will make the ball velocity change by the multiple of the
-	*   new value given.  The change is not exact and will tend to be a bit over or under
-	*   the amount asked for, due to rounding, but it will be fairly close.
+	*   new value given.  The change is not exact and will tend to be a bit over or
+	*   under the amount asked for, due to rounding, but it will be fairly close.
+	*		It is suggested that you don't make large changes from the current velocity,
+	*	because they will appear too abrupt and the player can't react to it easily.
 	*		Examples:
 	*		ChangeVelocity(0.9f) will slow the ball down by about 1/10th
 	*		ChangeVelocity(1.1f) will speed the ball up by about 1/10th

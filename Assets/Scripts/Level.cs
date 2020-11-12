@@ -31,7 +31,7 @@ public class Level : MonoBehaviour
     public void CountBlocks()
     {
         blocks++;
-        if (blocks == 1)
+        if (blocks >= 1)
             gameStatus.SetAllBlocksDestroyed(false);   // Only need to reset this if there are breakable blocks
     }   // CountBreakableBlocks()
 

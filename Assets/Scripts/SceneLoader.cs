@@ -34,7 +34,9 @@ public class SceneLoader : MonoBehaviour
 	{
 		if (Application.isPlaying & !Application.isEditor)
 			Application.Quit(); // We may return from this, but the program will terminate at the end of the frame
+#if false
 		else
-			UnityEditor.EditorApplication.isPlaying = false;    // Handle being in the editor
+			UnityEditor.EditorApplication.isPlaying = false;    // Handle being in the editor, but set #if to true to use it
+#endif
 	}   // ExitGame()
 }   // class SceneLoader
